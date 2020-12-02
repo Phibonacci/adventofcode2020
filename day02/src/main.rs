@@ -41,7 +41,7 @@ fn parse_line(line: &String) -> Entry {
   use regex::Regex;
   lazy_static! {
     static ref PASSWORD_REGEX: Regex =
-      Regex::new(r"(?P<min>\d*)-(?P<max>\d*) (?P<character>-?[a-z]): (?P<password>-?.*)").unwrap();
+      Regex::new(r"(?P<min>\d*)-(?P<max>\d*) (?P<character>[a-z]): (?P<password>.*)").unwrap();
   }
   let coordinates_caps = PASSWORD_REGEX.captures(line).unwrap();
   Entry {
