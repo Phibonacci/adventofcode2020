@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
 
 fn main() {
   let before = std::time::Instant::now();
