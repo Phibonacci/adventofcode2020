@@ -107,5 +107,5 @@ fn part2(sits: &mut Vec<u32>) -> () {
     }
     previous_sit = *sit;
   }
-  panic!("There is not sit left! You will have to leave Dr. Dao, please follow us.")
+  panic!("There is no sit left! You will have to leave Dr. Dao, please follow us.")
 }
