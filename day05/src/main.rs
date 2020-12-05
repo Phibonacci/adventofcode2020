@@ -57,38 +57,17 @@ impl Default for SpotRanges {
 fn parse_id(id: &String) -> u32 {
   let spot = id
     .chars()
-    .fold(SpotRanges::default(), |range, step| parse_step(range, step));
-  spot.row.0 * 8 + spot.column.0
+    .fold((0, 0), |position, step| parse_step(position, step));
+  spot.0 * 8 + spot.1
 }
 
-fn parse_step(range: SpotRanges, step: char) -> SpotRanges {
+fn parse_step(position: (u32, u32), step: char) -> (u32, u32) {
   match step {
-    'F' => SpotRanges {
-      row: (range.row.0, (range.row.1 - range.row.0) / 2 + range.row.0),
-      column: range.column,
-    },
-    'B' => SpotRanges {
-      row: (
-        (range.row.1 - range.row.0) / 2 + range.row.0 + 1,
-        range.row.1,
-      ),
-      column: range.column,
-    },
-    'L' => SpotRanges {
-      row: range.row,
-      column: (
-        range.column.0,
-        (range.column.1 - range.column.0) / 2 + range.column.0,
-      ),
-    },
-    'R' => SpotRanges {
-      row: range.row,
-      column: (
-        (range.column.1 - range.column.0) / 2 + range.column.0 + 1,
-        range.column.1,
-      ),
-    },
-    _ => unreachable!(),
+    'F' => (position.0 << 1, position.1),
+    'B' => (position.0 << 1 | 1, position.1),
+    'L' => (position.0, position.1 << 1),
+    'R' => (position.0, position.1 << 1 | 1),
+    _ => (position.0, position.1),
   }
 }
 
