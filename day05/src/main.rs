@@ -67,7 +67,7 @@ fn parse_step(position: (u32, u32), step: char) -> (u32, u32) {
     'B' => (position.0 << 1 | 1, position.1),
     'L' => (position.0, position.1 << 1),
     'R' => (position.0, position.1 << 1 | 1),
-    _ => (position.0, position.1),
+    _ => unreachable!(),
   }
 }
 
