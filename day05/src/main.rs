@@ -40,20 +40,6 @@ fn part1(data: &Vec<String>) -> Vec<u32> {
   sits_list
 }
 
-struct SpotRanges {
-  row: (u32, u32),
-  column: (u32, u32),
-}
-
-impl Default for SpotRanges {
-  fn default() -> SpotRanges {
-    SpotRanges {
-      row: (0, 127),
-      column: (0, 7),
-    }
-  }
-}
-
 fn parse_id(id: &String) -> u32 {
   let spot = id
     .chars()
