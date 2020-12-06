@@ -11,14 +11,20 @@ fn main() {
     .map(|s| s.lines().map(|l| l.to_string()).collect())
     .collect();
 
-  let p1 = count(&declarations, false);
+  let p1 = count(&declarations, |a, b| a | b);
   println!("Part1: {} |  elapsed time: {:.2?}", p1, before_p1.elapsed());
   let before_p2 = std::time::Instant::now();
-  let p2 = count(&declarations, true);
+  let p2 = count(&declarations, |a, b| a & b);
   println!("Part2: {} |  elapsed time: {:.2?}", p2, before_p2.elapsed());
 }
 
-fn count(declarations: &Vec<Vec<String>>, unanimous: bool) -> usize {
+fn count(
+  declarations: &Vec<Vec<String>>,
+  op: fn(
+    &std::collections::HashSet<char>,
+    &std::collections::HashSet<char>,
+  ) -> std::collections::HashSet<char>,
+) -> usize {
   declarations
     .iter()
     .map(|group| {
@@ -27,12 +33,7 @@ fn count(declarations: &Vec<Vec<String>>, unanimous: bool) -> usize {
         .fold(
           group[0].chars().collect(),
           |acc: std::collections::HashSet<char>, current| {
-            current
-              .chars()
-              .into_iter()
-              .chain(acc.clone())
-              .filter(|c| !unanimous || (acc.contains(c) && current.contains(*c)))
-              .collect()
+            op(&current.chars().into_iter().collect(), &acc)
           },
         )
         .len()
