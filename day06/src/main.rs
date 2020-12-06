@@ -1,14 +1,16 @@
 use std::collections::HashSet;
 
 fn main() {
-  let before_p1 = std::time::Instant::now();
+  let before_parsing = std::time::Instant::now();
   let args: Vec<String> = std::env::args().collect();
   if args.len() < 2 {
     panic!("Not enough arguments");
   }
   let buffer = std::fs::read_to_string(&args[1]).unwrap();
   let declarations: Vec<&str> = buffer.split("\n\n").collect();
+  println!("Parsing: elapsed time: {:.2?}", before_parsing.elapsed());
 
+  let before_p1 = std::time::Instant::now();
   let p1: usize = declarations
     .iter()
     .map(|group| count(group, |a, b| a | b))
