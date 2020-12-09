@@ -13,7 +13,7 @@ fn main() {
   let parsing_time = before_parsing.elapsed();
 
   let before_p1 = std::time::Instant::now();
-  let p1 = data
+  let p1 = *data
     .iter()
     .enumerate()
     .find(|i| !is_valid_number(&data, i.0))
@@ -50,7 +50,7 @@ fn is_valid_number(data: &Vec<u64>, index: usize) -> bool {
   }
 }
 
-fn find_contiguous_sum(data: &Vec<u64>, looking: &u64) -> u64 {
+fn find_contiguous_sum(data: &Vec<u64>, looking: u64) -> u64 {
   for i in 0..data.len() - 1 {
     let mut sum = data[i];
     let mut smallest = sum;
@@ -62,10 +62,10 @@ fn find_contiguous_sum(data: &Vec<u64>, looking: &u64) -> u64 {
       } else if data[j] > largest {
         largest = data[j];
       }
-      if sum == *looking {
+      if sum == looking {
         return smallest + largest;
       }
-      if sum > *looking {
+      if sum > looking {
         break;
       }
     }
