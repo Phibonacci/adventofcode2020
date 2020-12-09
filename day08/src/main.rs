@@ -10,9 +10,11 @@ enum Instruction {
 fn main() {
   let before = std::time::Instant::now();
   let before_parsing = std::time::Instant::now();
-
-  println!("Loading file {}", "./day08/input.txt");
-  let buf = std::fs::read_to_string("./day08/input.txt").unwrap();
+  let args: Vec<String> = std::env::args().collect();
+  if args.len() < 2 {
+    panic!("Not enough arguments");
+  }
+  let buf = std::fs::read_to_string(&args[1]).unwrap();
   let mut data = parse_file(&buf);
   let parsing_time = before_parsing.elapsed();
   let before_p1 = std::time::Instant::now();
