@@ -9,22 +9,28 @@ enum Instruction {
 
 fn main() {
   let before = std::time::Instant::now();
-  let args: Vec<String> = std::env::args().collect();
-  if args.len() < 2 {
-    panic!("Not enough arguments");
-  }
-  let filename = &args[1];
-  println!("Loading file {}", filename);
-  let buf = std::fs::read_to_string(filename).unwrap();
+  let before_parsing = std::time::Instant::now();
+
+  println!("Loading file {}", "./day08/input.txt");
+  let buf = std::fs::read_to_string("./day08/input.txt").unwrap();
   let mut data = parse_file(&buf);
-  println!("Part1: {}", accumulator_value(&data).1);
-  println!("Part2: {}", fix_program(&mut data));
-  println!("Total elapsed time: {:.2?}", before.elapsed());
+  let parsing_time = before_parsing.elapsed();
+  let before_p1 = std::time::Instant::now();
+  let p1 = accumulator_value(&data).1;
+  let p1_time = before_p1.elapsed();
+  let before_p2 = std::time::Instant::now();
+  let p2 = fix_program(&mut data);
+  let p2_time = before_p2.elapsed();
+  let total_time = before.elapsed();
+  println!("Parsing: elapsed time: {:.2?}", parsing_time);
+  println!("Part1: {:>4} | elapsed time: {:.2?}", p1, p1_time);
+  println!("Part2: {:>4} | elapsed time: {:.2?}", p2, p2_time,);
+  println!("Total elapsed time: {:.2?}", total_time);
+  println!("Print elapsed time: {:.2?}", before.elapsed());
 }
 
 fn parse_file(buf: &String) -> Vec<(Instruction, i32)> {
-  let before = std::time::Instant::now();
-  let result = buf
+  buf
     .lines()
     .map(|l| {
       let s: Vec<&str> = l.split(' ').collect();
@@ -38,9 +44,7 @@ fn parse_file(buf: &String) -> Vec<(Instruction, i32)> {
         s[1].parse::<i32>().unwrap(),
       )
     })
-    .collect();
-  println!("Parsing: elapsed time: {:.2?}", before.elapsed());
-  result
+    .collect()
 }
 
 fn accumulator_value(data: &Vec<(Instruction, i32)>) -> (usize, i32) {
@@ -66,6 +70,7 @@ fn accumulator_value(data: &Vec<(Instruction, i32)>) -> (usize, i32) {
 }
 
 fn fix_program(data: &mut Vec<(Instruction, i32)>) -> i32 {
+  let mut accumulator = 0;
   for i in 0..data.len() {
     let current_instruction = data[i].0.clone();
     match data[i].0 {
@@ -75,9 +80,9 @@ fn fix_program(data: &mut Vec<(Instruction, i32)>) -> i32 {
     }
     let result = accumulator_value(data);
     if result.0 >= data.len() {
-      return result.1;
+      accumulator = result.1;
     }
     data[i].0 = current_instruction;
   }
-  panic!("No valid program found");
+  accumulator
 }
