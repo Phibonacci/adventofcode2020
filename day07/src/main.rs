@@ -13,14 +13,21 @@ fn main() {
   println!("Loading file {}", filename);
   let buf = std::fs::read_to_string(filename).unwrap();
   let data = parse_file(buf);
+  let before_p1 = std::time::Instant::now();
   println!(
-    "Part1: {}",
+    "Part1: {} | elapsed time: {:.2?}",
     data
       .iter()
       .filter(|key| { has_shiny(&data, key.0) })
-      .count()
+      .count(),
+    before_p1.elapsed()
   );
-  println!("Part2: {}", count(&data, &"shiny gold"));
+  let before_p2 = std::time::Instant::now();
+  println!(
+    "Part2: {} | elapsed time: {:.2?}",
+    count(&data, &"shiny gold"),
+    before_p2.elapsed()
+  );
   println!("Total elapsed time: {:.2?}", before.elapsed());
 }
 
