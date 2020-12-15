@@ -50,7 +50,6 @@ fn part1(bus_list: &Vec<Option<i64>>, arriving_time: i64) -> i64 {
       None => continue,
       Some(bus) => {
         let bus_passage = next_passage(arriving_time, *bus);
-        println!("{} ({})", bus_passage, *bus);
         if best_bus == None || bus_passage < best_bus_passage {
           best_bus = Some(bus);
           best_bus_passage = bus_passage;
@@ -58,28 +57,12 @@ fn part1(bus_list: &Vec<Option<i64>>, arriving_time: i64) -> i64 {
       }
     }
   }
-  println!(
-    "{} * ({} - {})",
-    best_bus.unwrap(),
-    best_bus_passage,
-    arriving_time
-  );
   best_bus.unwrap() * (best_bus_passage - arriving_time)
 }
 
 fn next_passage(arriving_time: i64, bus_id: i64) -> i64 {
   let remainder = if arriving_time % bus_id > 0 { 1 } else { 0 };
-  println!(
-    "({} / {}) * ({} + {})",
-    arriving_time, bus_id, bus_id, remainder
-  );
-  println!(
-    "({}) * ({} + {})",
-    arriving_time / bus_id,
-    bus_id,
-    remainder
-  );
-  ((arriving_time as f64 / bus_id as f64).round() as i64 + remainder) * bus_id
+  (arriving_time / bus_id + remainder) * bus_id
 }
 
 fn part2(bus_list: &Vec<Option<i64>>) -> i64 {
