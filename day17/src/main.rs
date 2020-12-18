@@ -8,7 +8,7 @@ fn main() {
   }
   let data = std::fs::read_to_string(&args[1]).unwrap();
   let before_parsing = std::time::Instant::now();
-  let cubes: HashSet<(i64, i64, i64)> = data
+  let cubes: HashSet<Vec<i64>> = data
     .lines()
     .enumerate()
     .map(|l| {
@@ -16,7 +16,7 @@ fn main() {
         .chars()
         .enumerate()
         .filter(|c| c.1 == '#')
-        .map(move |c| (c.0 as i64, l.0 as i64, 0))
+        .map(move |c| vec![c.0 as i64, l.0 as i64, 0])
     })
     .flatten()
     .collect();
@@ -26,121 +26,113 @@ fn main() {
   let p1 = part1(&cubes);
   let p1_time = before_p1.elapsed();
 
-  // let before_p2 = std::time::Instant::now();
-  // let p2 = part2(&ticket_infos);
-  // let p2_time = before_p2.elapsed();
+  let before_p2 = std::time::Instant::now();
+  let p2 = part2(&cubes);
+  let p2_time = before_p2.elapsed();
 
   let total_time = before.elapsed();
 
   println!("Parsing: elapsed time: {:.2?}", parsing_time);
   println!("Part1: {:>4} | elapsed time: {:.2?}", p1, p1_time);
-  // println!("Part2: {:>4} | elapsed time: {:.2?}", p2, p2_time,);
+  println!("Part2: {:>4} | elapsed time: {:.2?}", p2, p2_time,);
   println!("Total elapsed time: {:.2?}", total_time);
   println!("Print elapsed time: {:.2?}", before.elapsed());
 }
 
-fn part1(cubes: &HashSet<(i64, i64, i64)>) -> usize {
+fn part1(cubes: &HashSet<Vec<i64>>) -> usize {
   let mut state = cubes.clone();
   for _i in 0..6 {
     state = cycle(&state);
-    // print(&state);
   }
   state.len()
 }
 
-fn print(cubes: &HashSet<(i64, i64, i64)>) {
-  let mut s = (0, 0, 0);
-  let mut b = (0, 0, 0);
-  for cube in cubes {
-    if cube.0 < s.0 {
-      s.0 = cube.0;
-    }
-    if cube.0 > b.0 {
-      b.0 = cube.0;
-    }
-    if cube.1 < s.1 {
-      s.1 = cube.1;
-    }
-    if cube.1 > b.1 {
-      b.1 = cube.1;
-    }
-    if cube.2 < s.2 {
-      s.2 = cube.2;
-    }
-    if cube.2 > b.2 {
-      b.2 = cube.2;
-    }
+fn part2(cubes: &HashSet<Vec<i64>>) -> usize {
+  let mut state = cubes
+    .clone()
+    .iter()
+    .map(|c| c.iter().chain(std::iter::once(&0)).map(|p| *p).collect())
+    .collect();
+  for _i in 0..6 {
+    state = cycle(&state);
   }
-  for z in s.2..b.2 + 1 {
-    println!("z={}", z);
-    for y in s.1..b.1 + 1 {
-      for x in s.0..b.0 + 1 {
-        print!("{}", if cubes.contains(&(x, y, z)) { '#' } else { '.' });
-      }
-      println!();
-    }
-    println!();
-  }
-  println!("=======");
+  state.len()
 }
 
-fn cycle(state: &HashSet<(i64, i64, i64)>) -> HashSet<(i64, i64, i64)> {
+fn cycle(state: &HashSet<Vec<i64>>) -> HashSet<Vec<i64>> {
   let mut new_state = HashSet::new();
   for active in state.iter() {
     let active_neighbours = active_neighbour_count(active, state);
-    // println!("{}", active_neighbours);
     if active_neighbours == 2 || active_neighbours == 3 {
-      new_state.insert(*active);
+      new_state.insert(active.clone());
     }
     new_state.extend(valid_neighbours(active, state));
   }
   new_state
 }
 
-fn active_neighbour_count(cube: &(i64, i64, i64), state: &HashSet<(i64, i64, i64)>) -> usize {
-  let mut count = 0;
-  for x in -1..2 {
-    for y in -1..2 {
-      for z in -1..2 {
-        let neighbour = (x + cube.0, y + cube.1, z + cube.2);
-        if *cube != neighbour && state.contains(&neighbour) {
-          // println!("{},{},{}", neighbour.0, neighbour.1, neighbour.2);
-          count += 1;
-        }
-      }
-    }
-  }
-  count
+fn active_neighbour_count(cube: &Vec<i64>, state: &HashSet<Vec<i64>>) -> usize {
+  let mut relative_pos = vec![0; cube.len()];
+  active_neighbour_count_rec(cube, state, 0, &mut relative_pos)
 }
 
-fn valid_neighbours(
-  cube: &(i64, i64, i64),
-  state: &HashSet<(i64, i64, i64)>,
-) -> HashSet<(i64, i64, i64)> {
-  let mut valid = HashSet::new();
-  // println!(
-  //   "Looking for inactive neighbours of: {},{},{}",
-  //   cube.0, cube.1, cube.2
-  // );
-  for x in -1..2 {
-    for y in -1..2 {
-      for z in -1..2 {
-        let neighbour = (x + cube.0, y + cube.1, z + cube.2);
-        if *cube != neighbour && !state.contains(&neighbour) {
-          // println!(
-          //   "Looking for neighbours of: {},{},{}",
-          //   neighbour.0, neighbour.1, neighbour.2
-          // );
-        }
-        if *cube != neighbour
-          && !state.contains(&neighbour)
-          && active_neighbour_count(&neighbour, state) == 3
-        {
-          // println!("inserted");
-          valid.insert(neighbour);
-        }
-      }
+fn active_neighbour_count_rec(
+  cube: &Vec<i64>,
+  state: &HashSet<Vec<i64>>,
+  depth: usize,
+  relative_pos: &mut Vec<i64>,
+) -> usize {
+  if depth == cube.len() {
+    let mut neighbour = cube.clone();
+    for i in 0..cube.len() {
+      neighbour[i] += relative_pos[i];
     }
+    if *cube != neighbour && state.contains(&neighbour) {
+      1
+    } else {
+      0
+    }
+  } else {
+    let mut result = 0;
+    relative_pos[depth] = -1;
+    result += active_neighbour_count_rec(cube, state, depth + 1, relative_pos);
+    relative_pos[depth] = 0;
+    result += active_neighbour_count_rec(cube, state, depth + 1, relative_pos);
+    relative_pos[depth] = 1;
+    result += active_neighbour_count_rec(cube, state, depth + 1, relative_pos);
+    result
   }
-  valid
+}
+
+fn valid_neighbours(cube: &Vec<i64>, state: &HashSet<Vec<i64>>) -> HashSet<Vec<i64>> {
+  let mut relative_pos = vec![0; cube.len()];
+  valid_neighbours_rec(cube, state, 0, &mut relative_pos)
+}
+
+fn valid_neighbours_rec(
+  cube: &Vec<i64>,
+  state: &HashSet<Vec<i64>>,
+  depth: usize,
+  relative_pos: &mut Vec<i64>,
+) -> HashSet<Vec<i64>> {
+  if depth == cube.len() {
+    let mut neighbour = cube.clone();
+    for i in 0..cube.len() {
+      neighbour[i] += relative_pos[i];
+    }
+    if *cube != neighbour && active_neighbour_count(&neighbour, state) == 3 {
+      [neighbour].iter().cloned().collect()
+    } else {
+      HashSet::new()
+    }
+  } else {
+    let mut result = HashSet::new();
+    relative_pos[depth] = -1;
+    result.extend(valid_neighbours_rec(cube, state, depth + 1, relative_pos));
+    relative_pos[depth] = 0;
+    result.extend(valid_neighbours_rec(cube, state, depth + 1, relative_pos));
+    relative_pos[depth] = 1;
+    result.extend(valid_neighbours_rec(cube, state, depth + 1, relative_pos));
+    result
+  }
 }
