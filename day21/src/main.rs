@@ -88,16 +88,11 @@ fn solve(foods: &Vec<Food>) -> () {
   }
   let mut uniq_dangerous_ingredients = remove_duplicates(&mut allergen_to_dangerous_ingredients);
   uniq_dangerous_ingredients.sort_by(|a, b| a.cmp(b));
-  let canonical_dangerous_ingredients =
-    uniq_dangerous_ingredients
-      .iter()
-      .fold(String::new(), |r, i| {
-        if r.is_empty() {
-          format!("{}", i.1)
-        } else {
-          format!("{},{}", r, i.1)
-        }
-      });
+  let canonical_dangerous_ingredients = uniq_dangerous_ingredients
+    .iter()
+    .map(|i| i.1)
+    .collect::<Vec<&str>>()
+    .join(",");
   let p2_time = before_p2.elapsed();
   println!(
     "Part2: {:>4} | elapsed time: {:.2?}",
